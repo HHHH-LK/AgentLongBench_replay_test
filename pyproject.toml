@@ -1,0 +1,24 @@
+[project]
+name = "memoyagenttest"
+version = "0.1.0"
+description = "Vanilla 多轮 Agent KV-reuse 性能基线 (支持 AgentLongBench 数据集 + vLLM serve)"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+memory-bench = "memory_bench.runner:main"
+memory-analyze = "memory_bench.analyze:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["memory_bench"]
