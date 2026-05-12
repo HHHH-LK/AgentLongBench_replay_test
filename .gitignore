@@ -27,3 +27,6 @@ checkpoints/
 *.ckpt
 *.bin
 *.safetensors
+.claude/
+.DS_Store
+runs.zip
