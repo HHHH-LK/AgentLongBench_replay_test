@@ -107,7 +107,7 @@ def timed_chat(
     except Exception as e:
         error = f"{type(e).__name__}: {e}"
 
-    e2e_ms = (time.perf_counter() - t0) * 1000.0
+    e2e_ms = (time.perf_counter() -  t0) * 1000.0
     ttft_ms = (first_token_at - t0) * 1000.0 if first_token_at is not None else None
     decode_ms = max(e2e_ms - ttft_ms, 0.0) if ttft_ms is not None else None
     n_completion = usage.get("completion_tokens")

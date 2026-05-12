@@ -13,7 +13,6 @@ from .types import HistoryLabel, ParseKind, QuestionType
 
 _ANSWER_RE = re.compile(r"<answer>(.*?)</answer>", flags=re.DOTALL | re.IGNORECASE)
 
-
 def _extract_answer_tag(text: str) -> Optional[str]:
     if not text:
         return None

@@ -47,6 +47,7 @@ def _process_sample(
     max_tokens: int,
     timeout: int,
     max_turns: Optional[int],
+    extra_payload: Optional[Dict[str, Any]] = None,
 ) -> Tuple[List[TurnMetrics], SampleResult]:
     """跑一条样本的所有轮次 (串行, 同一 base_url)。"""
     sys_prompt = build_system_prompt(qt, knowledge_label, history_label)
@@ -68,6 +69,7 @@ def _process_sample(
             temperature=temperature,
             max_tokens=max_tokens,
             timeout=timeout,
+            extra_payload=extra_payload,
         )
         if result.prompt_tokens is not None:
             cum_tokens = max(cum_tokens, result.prompt_tokens)
@@ -142,6 +144,7 @@ def run(
     max_turns: Optional[int] = None,
     workers: int = 1,
     run_id: Optional[str] = None,
+    disable_thinking: bool = False,
 ) -> Dict[str, Any]:
     rows = load_jsonl(dataset_path)
     rows = rows[offset:] if limit is None else rows[offset : offset + limit]
@@ -158,12 +161,17 @@ def run(
     turns_path.write_text("", encoding="utf-8")
     samples_path.write_text("", encoding="utf-8")
 
+    # 关闭 Qwen Thinking 模式 (vLLM chat_template 透传)
+    extra_payload: Optional[Dict[str, Any]] = None
+    if disable_thinking:
+        extra_payload = {"chat_template_kwargs": {"enable_thinking": False}}
+
     print(
         f"[run] run_id={run_id}\n"
         f"      dataset={dataset_path.name}  samples={len(rows)}\n"
         f"      qtype={qt.value}  knowledge={knowledge_label}  history={history_label}\n"
         f"      backend=api  model={model}  base_url={base_url}\n"
-        f"      workers={workers}",
+        f"      workers={workers}  disable_thinking={disable_thinking}",
         flush=True,
     )
 
@@ -180,6 +188,7 @@ def run(
             max_tokens=max_tokens,
             timeout=timeout,
             max_turns=max_turns,
+            extra_payload=extra_payload,
         )
 
     n_done = 0
@@ -264,6 +273,8 @@ def main() -> None:
     p.add_argument("--max-turns", type=int, default=None)
     p.add_argument("--workers", type=int, default=1, help="跨样本并行数 (同样本内永远串行)")
     p.add_argument("--run-id", type=str, default=None)
+    p.add_argument("--disable-thinking", action="store_true",
+                   help="关闭 Qwen3-Thinking 的思考段 (传 chat_template_kwargs.enable_thinking=false)")
     args = p.parse_args()
 
     run(
@@ -280,6 +291,7 @@ def main() -> None:
         max_turns=args.max_turns,
         workers=args.workers,
         run_id=args.run_id,
+        disable_thinking=args.disable_thinking,
     )
 
 
